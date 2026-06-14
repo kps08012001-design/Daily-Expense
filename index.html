@@ -1,682 +1,597 @@
 <!DOCTYPE html>
-<html lang="my">
+<html lang="my" class="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>နေ့စဉ် အသုံးစရိတ် မှတ်တမ်း</title>
-    
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js for Graphs -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
-    <!-- Configure Tailwind for Dark Mode -->
     <script>
+        // Configure Tailwind for Dark Mode
         tailwind.config = {
             darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Padauk', 'sans-serif'],
+                    }
+                }
+            }
         }
     </script>
-
-    <!-- Icons (Lucide) -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-    <!-- Custom Font -->
     <style>
+        /* Custom font for better Burmese rendering */
         @import url('https://fonts.googleapis.com/css2?family=Padauk:wght@400;700&display=swap');
         body {
             font-family: 'Padauk', sans-serif;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
-        
-        /* Custom Scrollbar */
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 6px;
+        /* Hide scrollbar for list but allow scroll */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
         }
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: #f1f5f9; 
-            border-radius: 8px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #cbd5e1; 
-            border-radius: 8px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8; 
-        }
-
-        /* Dark Mode Scrollbar */
-        html.dark .custom-scrollbar::-webkit-scrollbar-track {
-            background: #1e293b; 
-        }
-        html.dark .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #475569; 
-        }
-        html.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #64748b; 
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
         }
     </style>
 </head>
-<body class="bg-slate-50 dark:bg-slate-900 min-h-screen pb-10 transition-colors duration-300">
+<body class="bg-slate-100 text-slate-800 dark:bg-slate-900 dark:text-slate-100 min-h-screen pb-10">
 
-    <!-- Navbar -->
-    <nav class="bg-indigo-600 dark:bg-slate-800 text-white shadow-md rounded-b-3xl transition-colors duration-300">
-        <div class="max-w-6xl mx-auto px-4 py-6 relative">
-            <button id="theme-toggle" class="absolute right-4 top-6 p-2 rounded-full hover:bg-white/20 transition-colors" title="အလင်း/အမှောင် ပြောင်းရန်">
-                <i data-lucide="moon" id="theme-icon" class="w-6 h-6"></i>
-            </button>
-            
-            <div class="text-center">
-                <h1 class="text-2xl md:text-3xl font-bold flex items-center justify-center gap-2">
-                    <i data-lucide="wallet" class="w-8 h-8"></i>
-                    နေ့စဉ် အသုံးစရိတ် မှတ်တမ်း
-                </h1>
-                <p class="text-indigo-200 dark:text-slate-400 mt-2 text-sm md:text-base">သင့်ရဲ့ ဘဏ္ဍာရေးကို အကောင်းဆုံး စီမံပါ</p>
-            </div>
-        </div>
-    </nav>
-
-    <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 space-y-6">
+    <div class="max-w-5xl mx-auto p-4 md:p-8">
         
-        <!-- Summary & Budget Row -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-            <!-- Balance Card -->
-            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-4 md:p-6 text-center transition-colors">
-                <h2 class="text-xs md:text-sm text-slate-500 dark:text-slate-400 font-medium mb-1 md:mb-2 flex justify-center items-center gap-1.5"><i data-lucide="wallet-cards" class="w-4 h-4"></i> လက်ကျန်ငွေ</h2>
-                <div class="text-xl md:text-2xl font-bold text-indigo-600 dark:text-indigo-400">
-                    <span id="total-balance">၀</span><span class="text-sm font-normal ml-1">ကျပ်</span>
+        <!-- Header & Dark Mode Toggle -->
+        <header class="mb-8 flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
+            <div>
+                <h1 class="text-3xl font-bold text-indigo-600 dark:text-indigo-400 flex items-center justify-center md:justify-start gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-wallet"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a8 8 0 0 1-5.272 7H5a2 2 0 0 1-2-2V4"/><path d="M21 12v4h-3a2 2 0 0 1 0-4h3Z"/></svg>
+                    နေ့စဉ် ငွေစာရင်း မှတ်တမ်း
+                </h1>
+                <p class="text-slate-500 dark:text-slate-400 mt-2">သင့်ရဲ့ နေ့စဉ်ဝင်ငွေ၊ ထွက်ငွေများကို စနစ်တကျ မှတ်သားပါ</p>
+            </div>
+            
+            <button id="themeToggle" class="p-2 rounded-full bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                <!-- Sun Icon (shows in dark mode) -->
+                <svg id="sunIcon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hidden text-yellow-500"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+                <!-- Moon Icon (shows in light mode) -->
+                <svg id="moonIcon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-600"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+            </button>
+        </header>
+
+        <!-- Stats Section -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <!-- Balance -->
+            <div class="bg-indigo-600 text-white rounded-2xl p-6 shadow-lg">
+                <h2 class="text-sm font-medium text-indigo-100 mb-1">လက်ကျန်ငွေ</h2>
+                <div class="text-3xl font-bold flex items-baseline gap-1">
+                    <span id="balanceAmount">0</span>
+                    <span class="text-lg font-normal">ကျပ်</span>
                 </div>
             </div>
-            <!-- Income Card -->
-            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-4 md:p-6 text-center transition-colors">
-                <h2 class="text-xs md:text-sm text-slate-500 dark:text-slate-400 font-medium mb-1 md:mb-2 flex justify-center items-center gap-1.5"><i data-lucide="arrow-down-circle" class="w-4 h-4 text-emerald-500"></i> ဝင်ငွေ</h2>
-                <div class="text-xl md:text-2xl font-bold text-emerald-500 dark:text-emerald-400">
-                    <span id="total-income">၀</span><span class="text-sm font-normal ml-1">ကျပ်</span>
+            <!-- Income -->
+            <div class="bg-white dark:bg-slate-800 border border-emerald-100 dark:border-emerald-900 rounded-2xl p-6 shadow-sm">
+                <h2 class="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1 flex items-center gap-1">
+                    <svg class="text-emerald-500" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg>
+                    စုစုပေါင်း ဝင်ငွေ
+                </h2>
+                <div class="text-2xl font-bold text-emerald-600 dark:text-emerald-400 flex items-baseline gap-1">
+                    +<span id="incomeAmount">0</span>
+                    <span class="text-sm font-normal">ကျပ်</span>
                 </div>
             </div>
-            <!-- Expense Card -->
-            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-4 md:p-6 text-center transition-colors">
-                <h2 class="text-xs md:text-sm text-slate-500 dark:text-slate-400 font-medium mb-1 md:mb-2 flex justify-center items-center gap-1.5"><i data-lucide="arrow-up-circle" class="w-4 h-4 text-red-500"></i> ထွက်ငွေ</h2>
-                <div class="text-xl md:text-2xl font-bold text-red-500 dark:text-red-400">
-                    <span id="total-amount">၀</span><span class="text-sm font-normal ml-1">ကျပ်</span>
-                </div>
-            </div>
-            <!-- Budget Card -->
-            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-4 md:p-6 transition-colors flex flex-col justify-center cursor-pointer hover:shadow-md" onclick="setBudget()" title="ဘတ်ဂျက် သတ်မှတ်ရန် နှိပ်ပါ။">
-                <div class="flex justify-between items-center mb-1">
-                    <h2 class="text-xs md:text-sm text-slate-500 dark:text-slate-400 font-medium flex items-center gap-1.5"><i data-lucide="target" class="w-4 h-4 text-amber-500"></i> ဒီလ ဘတ်ဂျက်</h2>
-                    <span id="budget-percent" class="text-xs font-bold text-slate-600 dark:text-slate-300">0%</span>
-                </div>
-                <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2.5 mb-2 mt-1">
-                    <div id="budget-bar" class="bg-amber-500 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
-                </div>
-                <div class="text-xs text-right text-slate-500 dark:text-slate-400">
-                    <span id="budget-used">၀</span> / <span id="budget-total">မသတ်မှတ်ရသေး</span>
+            <!-- Expense -->
+            <div class="bg-white dark:bg-slate-800 border border-rose-100 dark:border-rose-900 rounded-2xl p-6 shadow-sm">
+                <h2 class="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1 flex items-center gap-1">
+                    <svg class="text-rose-500" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>
+                    စုစုပေါင်း ထွက်ငွေ
+                </h2>
+                <div class="text-2xl font-bold text-rose-600 dark:text-rose-400 flex items-baseline gap-1">
+                    -<span id="expenseAmount">0</span>
+                    <span class="text-sm font-normal">ကျပ်</span>
                 </div>
             </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
             <!-- Left Column: Form -->
             <div class="lg:col-span-1 space-y-6">
-                <!-- Add Form -->
-                <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 transition-colors">
-                    <h2 class="text-lg font-bold text-slate-800 dark:text-slate-100 mb-4 flex items-center gap-2">
-                        <i data-lucide="plus-circle" class="w-5 h-5 text-indigo-500 dark:text-indigo-400"></i>
-                        မှတ်တမ်း အသစ်ထည့်ရန်
-                    </h2>
+                <!-- Form Card -->
+                <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 transition-colors">
+                    <h3 class="text-lg font-bold mb-4 text-slate-700 dark:text-slate-200" id="formTitle">စာရင်း အသစ်ထည့်ရန်</h3>
                     
-                    <form id="expense-form" class="space-y-4">
-                        <!-- Type Selection -->
-                        <div class="flex gap-4 mb-4 p-1 bg-slate-100 dark:bg-slate-700 rounded-lg">
-                            <label class="flex-1 text-center cursor-pointer">
-                                <input type="radio" name="trans_type" value="expense" checked class="peer sr-only">
-                                <div class="py-2 rounded-md text-sm font-medium text-slate-600 dark:text-slate-400 peer-checked:bg-white dark:peer-checked:bg-slate-800 peer-checked:text-red-500 peer-checked:shadow-sm transition-all">
+                    <form id="expenseForm" class="space-y-4">
+                        
+                        <!-- Type Selector -->
+                        <div class="flex p-1 bg-slate-100 dark:bg-slate-900 rounded-lg">
+                            <label class="flex-1 cursor-pointer">
+                                <input type="radio" name="txType" value="expense" class="peer sr-only" checked onchange="updateCategoryOptions()">
+                                <div class="text-center py-2 rounded-md font-medium text-sm transition-colors peer-checked:bg-white dark:peer-checked:bg-slate-700 peer-checked:text-rose-600 peer-checked:shadow-sm text-slate-500 dark:text-slate-400">
                                     ထွက်ငွေ
                                 </div>
                             </label>
-                            <label class="flex-1 text-center cursor-pointer">
-                                <input type="radio" name="trans_type" value="income" class="peer sr-only">
-                                <div class="py-2 rounded-md text-sm font-medium text-slate-600 dark:text-slate-400 peer-checked:bg-white dark:peer-checked:bg-slate-800 peer-checked:text-emerald-500 peer-checked:shadow-sm transition-all">
+                            <label class="flex-1 cursor-pointer">
+                                <input type="radio" name="txType" value="income" class="peer sr-only" onchange="updateCategoryOptions()">
+                                <div class="text-center py-2 rounded-md font-medium text-sm transition-colors peer-checked:bg-white dark:peer-checked:bg-slate-700 peer-checked:text-emerald-600 peer-checked:shadow-sm text-slate-500 dark:text-slate-400">
                                     ဝင်ငွေ
                                 </div>
                             </label>
                         </div>
 
-                        <!-- Description -->
-                        <div id="desc-container" class="transition-all duration-300">
-                            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">အကြောင်းအရာ</label>
-                            <input type="text" id="desc" required placeholder="ဥပမာ - နေ့လည်စာ / မုန့်ဖိုး" 
-                                class="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-white dark:bg-slate-700 text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-slate-500">
+                        <div id="descContainer">
+                            <label class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">အကြောင်းအရာ</label>
+                            <input type="text" id="descInput" required placeholder="ဥပမာ - နေ့လည်စာ / မုန့်ဖိုး" class="w-full px-4 py-2 bg-transparent border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all dark:text-white dark:placeholder-slate-500">
                         </div>
 
-                        <!-- Amount -->
                         <div>
-                            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">ပမာဏ (ကျပ်)</label>
-                            <input type="number" id="amount" required min="1" placeholder="ဥပမာ - 5000" 
-                                class="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-white dark:bg-slate-700 text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-slate-500">
+                            <label class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">ပမာဏ (ကျပ်)</label>
+                            <input type="number" id="amountInput" required min="1" placeholder="3000" class="w-full px-4 py-2 bg-transparent border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all dark:text-white dark:placeholder-slate-500">
                         </div>
 
-                        <!-- Category -->
                         <div>
-                            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">အမျိုးအစား</label>
-                            <select id="category" required 
-                                class="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-white dark:bg-slate-700 text-slate-800 dark:text-white">
-                                <!-- Options dynamically added -->
+                            <label class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">နေ့စွဲ</label>
+                            <input type="date" id="dateInput" required class="w-full px-4 py-2 bg-transparent border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all dark:text-white [color-scheme:light] dark:[color-scheme:dark]">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">အမျိုးအစား</label>
+                            <select id="categoryInput" required class="w-full px-4 py-2 bg-transparent border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all dark:text-white">
+                                <!-- Options populated by JS -->
                             </select>
                         </div>
 
-                        <!-- Date -->
-                        <div>
-                            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">ရက်စွဲ</label>
-                            <input type="date" id="date" required 
-                                class="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-white dark:bg-slate-700 text-slate-800 dark:text-white">
+                        <div class="flex gap-2 mt-2">
+                            <button type="submit" id="submitBtn" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition-colors flex justify-center items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                                မှတ်သားမည်
+                            </button>
+                            <button type="button" id="cancelEditBtn" class="hidden bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-bold py-3 px-4 rounded-lg transition-colors justify-center items-center">
+                                ပယ်ဖျက်မည်
+                            </button>
                         </div>
-
-                        <!-- Submit -->
-                        <button type="submit" id="submit-btn"
-                            class="w-full bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white font-medium py-2.5 rounded-lg transition-colors flex justify-center items-center gap-2 mt-4">
-                            <i data-lucide="save" class="w-4 h-4"></i>
-                            <span id="btn-text">မှတ်သားမည်</span>
-                        </button>
                     </form>
                 </div>
-            </div>
-
-            <!-- Right Column: Charts & List -->
-            <div class="lg:col-span-2 flex flex-col gap-6">
                 
-                <!-- Charts Row (Bar + Pie) -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <!-- Bar Chart -->
-                    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-4 md:p-6 transition-colors">
-                        <h2 class="text-xs font-bold text-slate-500 dark:text-slate-400 mb-4 flex items-center gap-2 uppercase tracking-wide">
-                            <i data-lucide="bar-chart-3" class="w-4 h-4"></i> ၇ ရက်အတွင်း
-                        </h2>
-                        <div class="h-[200px] w-full">
-                            <canvas id="myChart"></canvas>
-                        </div>
-                    </div>
-                    <!-- Pie Chart -->
-                    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-4 md:p-6 transition-colors">
-                        <h2 class="text-xs font-bold text-slate-500 dark:text-slate-400 mb-4 flex items-center gap-2 uppercase tracking-wide">
-                            <i data-lucide="pie-chart" class="w-4 h-4"></i> အသုံးစရိတ် အမျိုးအစားများ
-                        </h2>
-                        <div class="h-[200px] w-full flex justify-center">
-                            <canvas id="categoryChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- List & Controls -->
-                <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-4 md:p-6 flex flex-col flex-1 min-h-[400px] transition-colors">
-                    
-                    <!-- Search, Filter & Actions -->
-                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-                        <h2 class="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2 whitespace-nowrap">
-                            <i data-lucide="list" class="w-5 h-5 text-indigo-500 dark:text-indigo-400"></i>
-                            မှတ်တမ်းများ
-                        </h2>
-                        
-                        <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
-                            <!-- Search -->
-                            <div class="relative flex-1 md:w-48">
-                                <i data-lucide="search" class="w-4 h-4 absolute left-3 top-2.5 text-slate-400"></i>
-                                <input type="text" id="search-input" placeholder="ရှာဖွေရန်..." class="w-full pl-9 pr-3 py-1.5 text-sm border border-slate-300 dark:border-slate-600 rounded-lg outline-none bg-white dark:bg-slate-700 text-slate-800 dark:text-white">
-                            </div>
-                            <!-- Filter -->
-                            <select id="date-filter" class="py-1.5 px-3 text-sm border border-slate-300 dark:border-slate-600 rounded-lg outline-none bg-white dark:bg-slate-700 text-slate-800 dark:text-white cursor-pointer">
-                                <option value="all">အားလုံး</option>
-                                <option value="today">ယနေ့</option>
-                                <option value="week">ဒီတစ်ပတ်</option>
-                                <option value="month">ဒီလ</option>
-                            </select>
-                            <!-- Sync Button -->
-                            <button onclick="fetchFromGoogleSheets()" id="sync-btn" class="p-1.5 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-lg hover:bg-indigo-100 transition-colors" title="Google Sheet မှ ပြန်လည်ဆွဲယူမည်">
-                                <i data-lucide="refresh-cw" class="w-5 h-5"></i>
-                            </button>
-                            <!-- Clear All -->
-                            <button id="clear-all" class="p-1.5 bg-red-50 dark:bg-red-900/30 text-red-500 dark:text-red-400 rounded-lg hover:bg-red-100 transition-colors hidden" title="အားလုံးဖျက်မည်">
-                                <i data-lucide="trash-2" class="w-5 h-5"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- List Container -->
-                    <div id="expense-list" class="custom-scrollbar flex-1 overflow-y-auto pr-2 space-y-3">
-                        <div id="empty-state" class="h-full flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 space-y-3 py-10">
-                            <i data-lucide="search-x" class="w-16 h-16 opacity-50"></i>
-                            <p>စာရင်း မရှိသေးပါ</p>
+                <!-- Chart Card (Visible mostly on Desktop in left col, or stacked on mobile) -->
+                <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 hidden lg:block">
+                    <h3 class="text-sm font-bold mb-4 text-slate-700 dark:text-slate-200 text-center">အသုံးစရိတ် ခွဲခြမ်းစိတ်ဖြာမှု</h3>
+                    <div class="relative h-48 w-full flex justify-center">
+                        <canvas id="expenseChartDesktop"></canvas>
+                        <div id="noChartDataDesktop" class="absolute inset-0 flex items-center justify-center text-slate-400 text-sm hidden">
+                            ဒေတာမရှိသေးပါ
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </main>
 
-    <!-- Notification Toast -->
-    <div id="toast" class="fixed bottom-5 right-5 transform translate-y-20 opacity-0 transition-all duration-300 bg-emerald-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2 z-50">
-        <i data-lucide="info" class="w-5 h-5"></i>
-        <span id="toast-message">အောင်မြင်ပါသည်။</span>
+            <!-- Right Column: List -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Mobile Chart (Visible only on mobile/tablet) -->
+                <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 lg:hidden">
+                    <h3 class="text-sm font-bold mb-4 text-slate-700 dark:text-slate-200 text-center">အသုံးစရိတ် ခွဲခြမ်းစိတ်ဖြာမှု</h3>
+                    <div class="relative h-48 w-full flex justify-center">
+                        <canvas id="expenseChartMobile"></canvas>
+                        <div id="noChartDataMobile" class="absolute inset-0 flex items-center justify-center text-slate-400 text-sm hidden">
+                            ဒေတာမရှိသေးပါ
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 h-[600px] flex flex-col">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-lg font-bold text-slate-700 dark:text-slate-200">မှတ်တမ်းများ</h3>
+                        <span id="recordCount" class="text-sm bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 py-1 px-3 rounded-full font-medium">0 ခု</span>
+                    </div>
+                    
+                    <div id="transactionList" class="flex-1 overflow-y-auto no-scrollbar space-y-3 pb-2">
+                        <!-- List items will be generated by JavaScript -->
+                        <div id="emptyState" class="text-center py-12 text-slate-400 hidden">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mx-auto mb-3 opacity-50"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg>
+                            <p>မှတ်တမ်း မရှိသေးပါ။</p>
+                            <p class="text-sm mt-1">ဝင်ငွေ/ထွက်ငွေ အသစ် စတင်ထည့်သွင်းပါ။</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
     </div>
 
-    <!-- Application Logic -->
+    <!-- JavaScript Logic -->
     <script>
-        // ==========================================
-        // 🚨 သင်၏ Google Apps Script URL ကို အောက်တွင် ထည့်ပါ။
-        // ==========================================
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzL8shiLSPzemtRBtUZE5tYF0c29JjxD1Wl5sDwWakaGK1O7OXuM9xllVqmQZK3wxVc/exec';
+        // Data Structure
+        let transactions = [];
+        let editingId = null;
+        
+        // Chart Instances
+        let chartDesktop = null;
+        let chartMobile = null;
 
-        // Init
-        lucide.createIcons();
+        // Categories Configuration
+        const categories = {
+            expense: [
+                { name: 'အစားအသောက်', color: '#f97316', bgClass: 'bg-orange-100 dark:bg-orange-900/30', textClass: 'text-orange-600 dark:text-orange-400', icon: '🍲' },
+                { name: 'သယ်ယူပို့ဆောင်ရေး', color: '#3b82f6', bgClass: 'bg-blue-100 dark:bg-blue-900/30', textClass: 'text-blue-600 dark:text-blue-400', icon: '🚌' },
+                { name: 'အိမ်လခ/မီတာ', color: '#a855f7', bgClass: 'bg-purple-100 dark:bg-purple-900/30', textClass: 'text-purple-600 dark:text-purple-400', icon: '🏠' },
+                { name: 'ဖျော်ဖြေရေး', color: '#ec4899', bgClass: 'bg-pink-100 dark:bg-pink-900/30', textClass: 'text-pink-600 dark:text-pink-400', icon: '🎬' },
+                { name: 'ကျန်းမာရေး', color: '#ef4444', bgClass: 'bg-red-100 dark:bg-red-900/30', textClass: 'text-red-600 dark:text-red-400', icon: '💊' },
+                { name: 'အခြား', color: '#64748b', bgClass: 'bg-slate-100 dark:bg-slate-700', textClass: 'text-slate-600 dark:text-slate-300', icon: '📦' }
+            ],
+            income: [
+                { name: 'လစာ', color: '#10b981', bgClass: 'bg-emerald-100 dark:bg-emerald-900/30', textClass: 'text-emerald-600 dark:text-emerald-400', icon: '💰' },
+                { name: 'လုပ်ငန်းဝင်ငွေ', color: '#06b6d4', bgClass: 'bg-cyan-100 dark:bg-cyan-900/30', textClass: 'text-cyan-600 dark:text-cyan-400', icon: '📈' },
+                { name: 'အပိုဝင်ငွေ', color: '#8b5cf6', bgClass: 'bg-violet-100 dark:bg-violet-900/30', textClass: 'text-violet-600 dark:text-violet-400', icon: '🎁' },
+                { name: 'အခြား', color: '#64748b', bgClass: 'bg-slate-100 dark:bg-slate-700', textClass: 'text-slate-600 dark:text-slate-300', icon: '📥' }
+            ]
+        };
+        
+        // Google Apps Script Web App URL
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx69icWMI1AbpSkxLZbJ-8kI7X4NuiWpI9tYjJ4W4YCs5uyrvriX3kKwEWRQ-YozeY9aw/exec'; 
+        
+        // DOM Elements
+        const expenseForm = document.getElementById('expenseForm');
+        const descContainer = document.getElementById('descContainer');
+        const descInput = document.getElementById('descInput');
+        const amountInput = document.getElementById('amountInput');
+        const dateInput = document.getElementById('dateInput');
+        const categoryInput = document.getElementById('categoryInput');
+        const transactionList = document.getElementById('transactionList');
+        
+        const balanceAmountEl = document.getElementById('balanceAmount');
+        const incomeAmountEl = document.getElementById('incomeAmount');
+        const expenseAmountEl = document.getElementById('expenseAmount');
+        
+        const emptyState = document.getElementById('emptyState');
+        const recordCount = document.getElementById('recordCount');
+        const submitBtn = document.getElementById('submitBtn');
+        const cancelEditBtn = document.getElementById('cancelEditBtn');
+        const formTitle = document.getElementById('formTitle');
 
-        // Theme Setup
-        const themeToggleBtn = document.getElementById('theme-toggle');
-        const themeIcon = document.getElementById('theme-icon');
-        const isDarkMode = localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        const themeToggle = document.getElementById('themeToggle');
+        const sunIcon = document.getElementById('sunIcon');
+        const moonIcon = document.getElementById('moonIcon');
 
-        if (isDarkMode) { document.documentElement.classList.add('dark'); themeIcon.setAttribute('data-lucide', 'sun'); } 
-        else { document.documentElement.classList.remove('dark'); themeIcon.setAttribute('data-lucide', 'moon'); }
+        // Initialize App
+        function init() {
+            // Setup Theme
+            if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+                sunIcon.classList.remove('hidden');
+                moonIcon.classList.add('hidden');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
 
-        themeToggleBtn.addEventListener('click', () => {
+            dateInput.valueAsDate = new Date();
+            updateCategoryOptions();
+
+            // Load from local storage (handles old "expenses" array structure as well)
+            const storedData = localStorage.getItem('expenses');
+            if (storedData) {
+                transactions = JSON.parse(storedData).map(t => ({
+                    ...t,
+                    type: t.type || 'expense' // Backward compatibility for old data
+                }));
+            }
+            
+            updateUI();
+        }
+
+        // Theme Toggle Logic
+        themeToggle.addEventListener('click', () => {
             document.documentElement.classList.toggle('dark');
-            const isDarkNow = document.documentElement.classList.contains('dark');
-            localStorage.setItem('theme', isDarkNow ? 'dark' : 'light');
-            themeIcon.setAttribute('data-lucide', isDarkNow ? 'sun' : 'moon');
-            lucide.createIcons();
-            updateCharts();
+            if (document.documentElement.classList.contains('dark')) {
+                localStorage.setItem('theme', 'dark');
+                sunIcon.classList.remove('hidden');
+                moonIcon.classList.add('hidden');
+            } else {
+                localStorage.setItem('theme', 'light');
+                sunIcon.classList.add('hidden');
+                moonIcon.classList.remove('hidden');
+            }
+            updateChart(); // Re-render chart for text colors
         });
 
-        // Data Setup
-        let transactions = JSON.parse(localStorage.getItem('myTransactions')) || [];
-        let monthlyBudget = Number(localStorage.getItem('myBudget')) || 0;
-
-        // DOM Elements
-        const form = document.getElementById('expense-form');
-        const listContainer = document.getElementById('expense-list');
-        const emptyState = document.getElementById('empty-state');
-        const searchInput = document.getElementById('search-input');
-        const dateFilter = document.getElementById('date-filter');
-        const clearAllBtn = document.getElementById('clear-all');
-        const toast = document.getElementById('toast');
-        const toastMessage = document.getElementById('toast-message');
-
-        // Dynamic Categories
-        const categories = {
-            expense: ['အစားအသောက်', 'သွားလာရေး', 'အိမ်သုံးစရိတ်', 'ဖျော်ဖြေရေး', 'ကျန်းမာရေး', 'အခြား'],
-            income: ['လစာ', 'အပိုဆုငွေ', 'စီးပွားရေး', 'အခြား']
-        };
-
-        const updateCategoryOptions = () => {
-            const type = document.querySelector('input[name="trans_type"]:checked').value;
-            document.getElementById('category').innerHTML = categories[type].map(c => `<option value="${c}">${c}</option>`).join('');
+        // Update dropdown and description field based on selected Type (Income/Expense)
+        function updateCategoryOptions() {
+            const selectedType = document.querySelector('input[name="txType"]:checked').value;
             
-            const descContainer = document.getElementById('desc-container');
-            const descInput = document.getElementById('desc');
-            if (type === 'income') {
+            // Show/Hide Description Field
+            if (selectedType === 'income') {
                 descContainer.classList.add('hidden');
-                descInput.removeAttribute('required');
+                descInput.required = false;
             } else {
                 descContainer.classList.remove('hidden');
-                descInput.setAttribute('required', 'true');
-            }
-        };
-
-        document.getElementsByName('trans_type').forEach(r => r.addEventListener('change', updateCategoryOptions));
-        updateCategoryOptions();
-        document.getElementById('date').valueAsDate = new Date();
-
-        // Utilities
-        const formatMoney = (amount) => amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-        
-        const getCategoryIcon = (cat) => {
-            const map = { 'အစားအသောက်':'utensils', 'သွားလာရေး':'car', 'အိမ်သုံးစရိတ်':'home', 'ဖျော်ဖြေရေး':'gamepad-2', 'ကျန်းမာရေး':'activity', 'လစာ':'banknote', 'အပိုဆုငွေ':'gift', 'စီးပွားရေး':'briefcase' };
-            return map[cat] || 'tag';
-        };
-
-        const showToast = (msg, type = 'success') => {
-            toastMessage.textContent = msg;
-            toast.className = `fixed bottom-5 right-5 transform transition-all duration-300 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2 z-50 ${type === 'error' ? 'bg-red-500' : (type === 'warning' ? 'bg-amber-500' : 'bg-emerald-500')}`;
-            setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 3000);
-        };
-
-        // Budget Logic
-        window.setBudget = () => {
-            const amt = prompt('တစ်လစာ ဘတ်ဂျက် ပမာဏ သတ်မှတ်ပါ (ကျပ်)', monthlyBudget > 0 ? monthlyBudget : '');
-            if(amt !== null && !isNaN(amt)) {
-                monthlyBudget = Number(amt);
-                localStorage.setItem('myBudget', monthlyBudget);
-                renderApp();
-                showToast('ဘတ်ဂျက် သတ်မှတ်ပြီးပါပြီ။');
-            }
-        };
-
-        const updateBudgetUI = (currentMonthExpense) => {
-            const budgetUsedEl = document.getElementById('budget-used');
-            const budgetTotalEl = document.getElementById('budget-total');
-            const budgetBar = document.getElementById('budget-bar');
-            const budgetPercent = document.getElementById('budget-percent');
-
-            budgetUsedEl.textContent = formatMoney(currentMonthExpense);
-            
-            if(monthlyBudget > 0) {
-                budgetTotalEl.textContent = formatMoney(monthlyBudget);
-                let percent = (currentMonthExpense / monthlyBudget) * 100;
-                let displayPercent = Math.min(percent, 100).toFixed(0);
-                budgetPercent.textContent = `${displayPercent}%`;
-                budgetBar.style.width = `${displayPercent}%`;
-
-                // Warning colors
-                if(percent >= 100) {
-                    budgetBar.classList.replace('bg-amber-500', 'bg-red-500');
-                    budgetPercent.classList.add('text-red-500');
-                } else if(percent >= 80) {
-                    budgetBar.classList.replace('bg-emerald-500', 'bg-amber-500');
-                    budgetBar.classList.replace('bg-red-500', 'bg-amber-500');
-                    budgetPercent.classList.remove('text-red-500');
-                } else {
-                    budgetBar.classList.replace('bg-amber-500', 'bg-emerald-500');
-                    budgetBar.classList.replace('bg-red-500', 'bg-emerald-500');
-                    budgetPercent.classList.remove('text-red-500');
-                }
-            } else {
-                budgetTotalEl.textContent = 'မသတ်မှတ်ရသေး';
-                budgetPercent.textContent = '0%';
-                budgetBar.style.width = '0%';
-                budgetBar.className = 'bg-amber-500 h-2.5 rounded-full transition-all duration-500';
-            }
-        };
-
-        // Data Filtering
-        const getFilteredData = () => {
-            let data = [...transactions];
-            const query = searchInput.value.toLowerCase();
-            const filter = dateFilter.value;
-            const now = new Date();
-
-            // Search Filter
-            if(query) {
-                data = data.filter(t => t.desc.toLowerCase().includes(query) || t.category.toLowerCase().includes(query));
+                descInput.required = true;
             }
 
-            // Date Filter
-            if(filter !== 'all') {
-                data = data.filter(t => {
-                    const d = new Date(t.date);
-                    if(filter === 'today') return d.toDateString() === now.toDateString();
-                    if(filter === 'week') {
-                        const pastWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
-                        return d >= pastWeek && d <= now;
-                    }
-                    if(filter === 'month') return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-                    return true;
+            categoryInput.innerHTML = '';
+            categories[selectedType].forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat.name;
+                option.textContent = cat.name;
+                categoryInput.appendChild(option);
+            });
+        }
+
+        // Format number
+        function formatMoney(amount) {
+            return new Intl.NumberFormat('en-US').format(amount);
+        }
+
+        // Sync to Google Sheets Function
+        async function syncToGoogleSheet(data, action) {
+            if (!GOOGLE_SCRIPT_URL) return; 
+            try {
+                fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: action, data: data })
                 });
+            } catch (error) {
+                console.error('Error syncing:', error);
             }
-            return data;
-        };
+        }
 
-        // Charts Management
-        let barChart = null;
-        let pieChart = null;
+        // Cancel Edit
+        cancelEditBtn.addEventListener('click', () => {
+            editingId = null;
+            expenseForm.reset(); // This selects 'expense' by default
+            dateInput.valueAsDate = new Date();
+            updateCategoryOptions(); // Re-run to show description box properly
+            formTitle.textContent = 'စာရင်း အသစ်ထည့်ရန်';
+            submitBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg> မှတ်သားမည်';
+            cancelEditBtn.classList.add('hidden');
+            cancelEditBtn.classList.remove('flex');
+        });
 
-        const updateCharts = () => {
-            const isDark = document.documentElement.classList.contains('dark');
-            const textColor = isDark ? '#94a3b8' : '#64748b';
-            const gridColor = isDark ? '#334155' : '#e2e8f0';
-            const filteredData = getFilteredData(); 
-
-            // --- Bar Chart Logic ---
-            const dateMap = {};
-            filteredData.forEach(t => {
-                if(!dateMap[t.date]) dateMap[t.date] = { income: 0, expense: 0 };
-                if(t.type === 'income') dateMap[t.date].income += Number(t.amount);
-                else dateMap[t.date].expense += Number(t.amount);
-            });
-            const sortedDates = Object.keys(dateMap).sort((a,b) => new Date(a) - new Date(b)).slice(-7);
+        // Form Submit (Add/Edit)
+        expenseForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const type = document.querySelector('input[name="txType"]:checked').value;
+            const amount = parseFloat(amountInput.value);
             
-            if(barChart) barChart.destroy();
-            barChart = new Chart(document.getElementById('myChart').getContext('2d'), {
-                type: 'bar',
-                data: {
-                    labels: sortedDates.length ? sortedDates : ['No Data'],
-                    datasets: [
-                        { label: 'ဝင်ငွေ', data: sortedDates.map(d => dateMap[d].income), backgroundColor: '#10b981', borderRadius: 4 },
-                        { label: 'ထွက်ငွေ', data: sortedDates.map(d => dateMap[d].expense), backgroundColor: '#ef4444', borderRadius: 4 }
-                    ]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        x: { ticks: { color: textColor }, grid: { display: false } },
-                        y: { ticks: { color: textColor }, grid: { color: gridColor } }
-                    }
+            // Use category name if description is hidden (income)
+            const finalDesc = type === 'income' ? categoryInput.value : descInput.value;
+
+            if (editingId) {
+                const index = transactions.findIndex(t => t.id === editingId);
+                if (index !== -1) {
+                    transactions[index] = {
+                        ...transactions[index],
+                        type: type,
+                        description: finalDesc,
+                        amount: amount,
+                        date: dateInput.value,
+                        category: categoryInput.value
+                    };
+                    syncToGoogleSheet(transactions[index], 'edit');
                 }
-            });
-
-            // --- Pie Chart Logic ---
-            const catMap = {};
-            filteredData.filter(t => t.type === 'expense').forEach(t => {
-                catMap[t.category] = (catMap[t.category] || 0) + Number(t.amount);
-            });
-            const pieLabels = Object.keys(catMap);
-            const pieData = Object.values(catMap);
-            const pieColors = ['#f43f5e', '#8b5cf6', '#3b82f6', '#10b981', '#f59e0b', '#64748b'];
-
-            if(pieChart) pieChart.destroy();
-            pieChart = new Chart(document.getElementById('categoryChart').getContext('2d'), {
-                type: 'doughnut',
-                data: {
-                    labels: pieLabels.length ? pieLabels : ['No Expense'],
-                    datasets: [{
-                        data: pieData.length ? pieData : [1],
-                        backgroundColor: pieData.length ? pieColors : ['#e2e8f0'],
-                        borderWidth: 0
-                    }]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: 'right', labels: { color: textColor, font: { family: 'Padauk', size: 10 }, boxWidth: 12 } }
-                    },
-                    cutout: '65%'
-                }
-            });
-        };
-
-        // Main Render Loop
-        const renderApp = () => {
-            const displayData = getFilteredData();
-
-            const totalIn = displayData.filter(t => t.type === 'income').reduce((s, i) => s + Number(i.amount), 0);
-            const totalEx = displayData.filter(t => t.type === 'expense').reduce((s, i) => s + Number(i.amount), 0);
-            const bal = totalIn - totalEx;
-
-            document.getElementById('total-income').textContent = formatMoney(totalIn);
-            document.getElementById('total-amount').textContent = formatMoney(totalEx);
-            document.getElementById('total-balance').textContent = formatMoney(bal);
-
-            const now = new Date();
-            const currentMonthExpense = transactions.filter(t => {
-                const d = new Date(t.date);
-                return t.type === 'expense' && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-            }).reduce((s, i) => s + Number(i.amount), 0);
-            
-            updateBudgetUI(currentMonthExpense);
-
-            if(monthlyBudget > 0 && currentMonthExpense > monthlyBudget && transactions.length > 0) {
-                document.getElementById('total-amount').parentElement.classList.add('border-red-500', 'border-2');
+                cancelEditBtn.click(); // Reset form
             } else {
-                document.getElementById('total-amount').parentElement.classList.remove('border-red-500', 'border-2');
-            }
-
-            listContainer.querySelectorAll('.record-item').forEach(e => e.remove());
-            
-            if (displayData.length === 0) {
-                emptyState.style.display = 'flex';
-                clearAllBtn.classList.add('hidden');
-            } else {
-                emptyState.style.display = 'none';
-                clearAllBtn.classList.remove('hidden');
+                const tx = {
+                    id: Date.now().toString(),
+                    type: type,
+                    description: finalDesc,
+                    amount: amount,
+                    date: dateInput.value,
+                    category: categoryInput.value
+                };
+                transactions.push(tx);
+                syncToGoogleSheet(tx, 'add');
                 
-                displayData.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(item => {
-                    const el = document.createElement('div');
-                    el.className = 'record-item bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-3 md:p-4 rounded-xl shadow-sm flex items-center justify-between hover:shadow-md transition-shadow group';
+                descInput.value = '';
+                amountInput.value = '';
+                if(type === 'expense') descInput.focus();
+            }
+            
+            updateLocalStorage();
+            updateUI();
+        });
+
+        // Delete function
+        function deleteTransaction(id) {
+            if (confirm('ဒီမှတ်တမ်းကို ဖျက်မှာ သေချာပါသလား?')) {
+                const txToDelete = transactions.find(t => t.id === id);
+                if (txToDelete) syncToGoogleSheet(txToDelete, 'delete');
+                
+                transactions = transactions.filter(t => t.id !== id);
+                updateLocalStorage();
+                updateUI();
+            }
+        }
+
+        // Edit function
+        window.editTransaction = function(id) { // Attached to window to work with inline onclick
+            const tx = transactions.find(t => t.id === id);
+            if (!tx) return;
+
+            document.querySelector(`input[name="txType"][value="${tx.type}"]`).checked = true;
+            updateCategoryOptions();
+
+            if (tx.type === 'expense') {
+                descInput.value = tx.description;
+            } else {
+                descInput.value = '';
+            }
+            
+            amountInput.value = tx.amount;
+            dateInput.value = tx.date;
+            categoryInput.value = tx.category;
+
+            editingId = id;
+            formTitle.textContent = 'မှတ်တမ်း ပြင်ဆင်ရန်';
+            submitBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg> ပြင်ဆင်မည်';
+            cancelEditBtn.classList.remove('hidden');
+            cancelEditBtn.classList.add('flex');
+            
+            expenseForm.scrollIntoView({ behavior: 'smooth' });
+            if (tx.type === 'expense') descInput.focus();
+        };
+
+        function updateLocalStorage() {
+            localStorage.setItem('expenses', JSON.stringify(transactions)); // Keep same key
+        }
+
+        function getCategoryStyle(catName, type) {
+            const list = type === 'income' ? categories.income : categories.expense;
+            const found = list.find(c => c.name === catName);
+            return found || list[list.length - 1]; // fallback to 'other'
+        }
+
+        // Master UI Update Function
+        function updateUI() {
+            renderListAndStats();
+            updateChart();
+        }
+
+        function renderListAndStats() {
+            transactionList.innerHTML = '';
+            transactionList.appendChild(emptyState);
+
+            let totalIncome = 0;
+            let totalExpense = 0;
+
+            const sortedTx = [...transactions].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            if (sortedTx.length === 0) {
+                emptyState.classList.remove('hidden');
+            } else {
+                emptyState.classList.add('hidden');
+                
+                sortedTx.forEach(tx => {
+                    if(tx.type === 'income') totalIncome += tx.amount;
+                    else totalExpense += tx.amount;
+
+                    const style = getCategoryStyle(tx.category, tx.type);
+                    const amountColor = tx.type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400';
+                    const sign = tx.type === 'income' ? '+' : '-';
                     
-                    const isInc = item.type === 'income';
-                    el.innerHTML = `
-                        <div class="flex items-center gap-3 overflow-hidden">
-                            <div class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-slate-50 dark:bg-slate-900/50 flex items-center justify-center text-slate-500 dark:text-slate-400 shrink-0">
-                                <i data-lucide="${getCategoryIcon(item.category)}" class="w-5 h-5"></i>
+                    const item = document.createElement('div');
+                    item.className = 'group flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-700 hover:border-indigo-200 dark:hover:border-indigo-500/50 transition-colors gap-3 sm:gap-0';
+                    
+                    const dateObj = new Date(tx.date);
+                    const formattedDate = dateObj.toLocaleDateString('my-MM', { day: 'numeric', month: 'short', year: 'numeric' });
+
+                    item.innerHTML = `
+                        <div class="flex items-center gap-4">
+                            <div class="${style.bgClass} ${style.textClass} w-12 h-12 rounded-full flex items-center justify-center text-xl shadow-sm shrink-0">
+                                ${style.icon}
                             </div>
-                            <div class="min-w-0">
-                                <h3 class="font-bold text-slate-800 dark:text-slate-100 truncate text-sm md:text-base">${item.desc}</h3>
-                                <div class="flex items-center gap-2 text-[10px] md:text-xs text-slate-500 dark:text-slate-400 mt-0.5 md:mt-1">
-                                    <span class="bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded-full">${item.category}</span>
-                                    <span>•</span><span>${item.date}</span>
+                            <div>
+                                <h4 class="font-bold text-slate-800 dark:text-slate-200">${tx.description}</h4>
+                                <div class="text-xs text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-2">
+                                    <span class="bg-slate-200 dark:bg-slate-700 px-2 py-0.5 rounded">${tx.category}</span>
+                                    <span>${formattedDate}</span>
                                 </div>
                             </div>
                         </div>
-                        <div class="flex items-center gap-2 md:gap-4 shrink-0">
-                            <span class="font-bold text-sm md:text-base ${isInc ? 'text-emerald-500' : 'text-red-500'}">${isInc?'+':'-'} ${formatMoney(item.amount)}</span>
-                            <button onclick="deleteExpense('${item.id}')" class="text-slate-300 hover:text-red-500 transition-colors p-1.5 md:p-2 rounded-full hover:bg-red-50 dark:hover:bg-red-900/20 md:opacity-0 group-hover:opacity-100">
-                                <i data-lucide="trash-2" class="w-4 h-4 md:w-5 md:h-5"></i>
-                            </button>
+                        <div class="flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto pl-16 sm:pl-0">
+                            <div class="font-bold ${amountColor} text-right mr-2 text-lg">
+                                ${sign}${formatMoney(tx.amount)} <span class="text-xs font-normal opacity-70">ကျပ်</span>
+                            </div>
+                            <div class="flex">
+                                <button onclick="editTransaction('${tx.id}')" class="text-slate-400 hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors p-2 md:opacity-0 md:group-hover:opacity-100 focus:opacity-100" title="ပြင်ဆင်မည်">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+                                </button>
+                                <button onclick="deleteTransaction('${tx.id}')" class="text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition-colors p-2 md:opacity-0 md:group-hover:opacity-100 focus:opacity-100" title="ဖျက်မည်">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+                                </button>
+                            </div>
                         </div>
                     `;
-                    listContainer.appendChild(el);
+                    transactionList.appendChild(item);
                 });
             }
-            lucide.createIcons();
-            updateCharts();
-        };
 
-        // Event Listeners for Filters
-        searchInput.addEventListener('input', renderApp);
-        dateFilter.addEventListener('change', renderApp);
+            // Update Stats Headers
+            const balance = totalIncome - totalExpense;
+            balanceAmountEl.textContent = formatMoney(balance);
+            incomeAmountEl.textContent = formatMoney(totalIncome);
+            expenseAmountEl.textContent = formatMoney(totalExpense);
+            recordCount.textContent = `${sortedTx.length} ခု`;
+        }
 
-        // Save Local
-        const saveData = () => localStorage.setItem('myTransactions', JSON.stringify(transactions));
+        // Render Chart
+        function updateChart() {
+            const expenseTxs = transactions.filter(t => t.type === 'expense');
+            const isDark = document.documentElement.classList.contains('dark');
+            const textColor = isDark ? '#94a3b8' : '#475569';
 
-        window.deleteExpense = (id) => {
-            transactions = transactions.filter(i => i.id !== id);
-            saveData();
-            renderApp();
-            showToast('မှတ်တမ်းကို ဖျက်လိုက်ပါပြီ။', 'success');
-        };
+            // Aggregate expenses by category
+            const dataMap = {};
+            expenseTxs.forEach(tx => {
+                dataMap[tx.category] = (dataMap[tx.category] || 0) + tx.amount;
+            });
 
-        clearAllBtn.addEventListener('click', () => {
-            if(confirm('မှတ်တမ်းအားလုံးကို ဖျက်ပစ်ဖို့ သေချာပါသလား?')) {
-                transactions = [];
-                saveData();
-                renderApp();
-                showToast('အားလုံးကို ဖျက်လိုက်ပါပြီ။', 'success');
-            }
-        });
+            const labels = [];
+            const dataPoints = [];
+            const bgColors = [];
 
-        // 🚨 1. Add Record (POST to Google Sheet - Using AWAIT for Phone support)
-        const saveToGoogleSheets = async (transaction) => {
-            if(!SCRIPT_URL) return;
-            try {
-                // Awaiting the fetch prevents the mobile browser from cancelling the request early
-                await fetch(SCRIPT_URL, {
-                    method: 'POST', 
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify(transaction)
-                });
-            } catch (e) { console.error("Google Sheet Sync Error:", e); }
-        };
+            categories.expense.forEach(cat => {
+                if(dataMap[cat.name]) {
+                    labels.push(cat.name);
+                    dataPoints.push(dataMap[cat.name]);
+                    bgColors.push(cat.color);
+                }
+            });
 
-        // Make the submit listener ASYNC
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('submit-btn');
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> မှတ်သားနေသည်...';
-            btn.disabled = true; lucide.createIcons();
+            const hasData = dataPoints.length > 0;
+            
+            document.getElementById('noChartDataDesktop').classList.toggle('hidden', hasData);
+            document.getElementById('noChartDataMobile').classList.toggle('hidden', hasData);
 
-            const type = document.querySelector('input[name="trans_type"]:checked').value;
-            const cat = document.getElementById('category').value;
-            let desc = document.getElementById('desc').value;
-            if (type === 'income') desc = cat; 
-
-            const newItem = {
-                id: Date.now().toString(),
-                type, desc,
-                amount: Number(document.getElementById('amount').value),
-                category: cat,
-                date: document.getElementById('date').value
+            const chartConfig = {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: dataPoints,
+                        backgroundColor: bgColors,
+                        borderWidth: isDark ? 2 : 1,
+                        borderColor: isDark ? '#1e293b' : '#ffffff',
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: { color: textColor, font: { family: 'Padauk' } }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.label + ': ' + formatMoney(context.raw) + ' ကျပ်';
+                                }
+                            }
+                        }
+                    }
+                }
             };
 
-            transactions.push(newItem);
-            saveData();
-            renderApp();
+            // Render/Update Desktop Chart
+            const ctxDesktop = document.getElementById('expenseChartDesktop').getContext('2d');
+            if (chartDesktop) chartDesktop.destroy();
+            if(hasData) chartDesktop = new Chart(ctxDesktop, chartConfig);
+
+            // Render/Update Mobile Chart (Modify legend position for mobile)
+            const mobileConfig = JSON.parse(JSON.stringify(chartConfig)); // deep copy
+            mobileConfig.options.plugins.legend.position = 'bottom';
+            mobileConfig.options.plugins.legend.labels.boxWidth = 12;
             
-            // 🚨 Wait until Data is sent to Google Sheet (Crucial for Mobile browsers)
-            await saveToGoogleSheets(newItem);
+            const ctxMobile = document.getElementById('expenseChartMobile').getContext('2d');
+            if (chartMobile) chartMobile.destroy();
+            if(hasData) chartMobile = new Chart(ctxMobile, mobileConfig);
+        }
 
-            document.getElementById('desc').value = '';
-            document.getElementById('amount').value = '';
-            document.getElementById(type === 'expense' ? 'desc' : 'amount').focus();
-
-            btn.innerHTML = originalText; btn.disabled = false; lucide.createIcons();
-            showToast('မှတ်တမ်းသစ် ထည့်သွင်းပြီးပါပြီ။');
-            
-            if(monthlyBudget > 0 && type === 'expense') {
-                const currentMonthEx = transactions.filter(t => t.type === 'expense' && t.date.startsWith(new Date().toISOString().slice(0,7))).reduce((s,i) => s + Number(i.amount), 0);
-                if(currentMonthEx > monthlyBudget) showToast('သတိပေးချက်: သတ်မှတ်ထားသော ဘတ်ဂျက်ထက် ကျော်လွန်နေပါပြီ!', 'warning');
-            }
-        });
-
-        // 🚨 2. Fetch from Google Sheets
-        window.fetchFromGoogleSheets = async () => {
-            if(!SCRIPT_URL) { showToast('URL မရှိပါ', 'error'); return; }
-            const syncBtn = document.getElementById('sync-btn');
-            syncBtn.querySelector('i').classList.add('animate-spin');
-            
-            try {
-                // Fetch with bypass cache for mobile
-                const response = await fetch(SCRIPT_URL + '?t=' + Date.now());
-                const cloudData = await response.json();
-                
-                if(cloudData && cloudData.length > 0) {
-                    const localIds = new Set(transactions.map(t => String(t.id)));
-                    let addedCount = 0;
-                    
-                    cloudData.forEach(row => {
-                        if(!localIds.has(String(row.id)) && row.id) {
-                            transactions.push({
-                                id: String(row.id),
-                                date: row.date,
-                                type: row.type || 'expense',
-                                category: row.category,
-                                desc: row.desc,
-                                amount: Number(row.amount)
-                            });
-                            addedCount++;
-                        }
-                    });
-
-                    if(addedCount > 0) {
-                        saveData();
-                        renderApp();
-                        showToast(`မှတ်တမ်းအဟောင်း ${addedCount} ခု ဆွဲယူပြီးပါပြီ။`);
-                    } else {
-                        showToast('အသစ်ထပ်မံ ဆွဲယူရန် မရှိပါ။');
-                    }
-                } else {
-                    showToast('Google Sheet တွင် မှတ်တမ်း မရှိသေးပါ။');
-                }
-            } catch (error) {
-                console.error(error);
-                showToast('Google Sheet မှ ဆွဲယူရာတွင် အခက်အခဲရှိပါသည်။', 'error');
-            }
-            syncBtn.querySelector('i').classList.remove('animate-spin');
-        };
-
-        // Initialize
-        renderApp();
-
+        // Run on load
+        init();
     </script>
 </body>
 </html>
