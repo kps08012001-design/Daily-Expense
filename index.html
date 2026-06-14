@@ -100,7 +100,7 @@
                     <span id="total-amount">၀</span><span class="text-sm font-normal ml-1">ကျပ်</span>
                 </div>
             </div>
-            <!-- Budget Card (New) -->
+            <!-- Budget Card -->
             <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-4 md:p-6 transition-colors flex flex-col justify-center cursor-pointer hover:shadow-md" onclick="setBudget()" title="ဘတ်ဂျက် သတ်မှတ်ရန် နှိပ်ပါ။">
                 <div class="flex justify-between items-center mb-1">
                     <h2 class="text-xs md:text-sm text-slate-500 dark:text-slate-400 font-medium flex items-center gap-1.5"><i data-lucide="target" class="w-4 h-4 text-amber-500"></i> ဒီလ ဘတ်ဂျက်</h2>
@@ -264,7 +264,7 @@
         // ==========================================
         // 🚨 သင်၏ Google Apps Script URL ကို အောက်တွင် ထည့်ပါ။
         // ==========================================
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby1PfFHg_8JMhBYXF1zZ3DzdpNJP1n0hFVCuRMMGj8iRY57PmrUynU8YcdfBjTw6wG-/exec';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzL8shiLSPzemtRBtUZE5tYF0c29JjxD1Wl5sDwWakaGK1O7OXuM9xllVqmQZK3wxVc/exec';
 
         // Init
         lucide.createIcons();
@@ -422,7 +422,7 @@
             const isDark = document.documentElement.classList.contains('dark');
             const textColor = isDark ? '#94a3b8' : '#64748b';
             const gridColor = isDark ? '#334155' : '#e2e8f0';
-            const filteredData = getFilteredData(); // Use filtered data for charts too!
+            const filteredData = getFilteredData(); 
 
             // --- Bar Chart Logic ---
             const dateMap = {};
@@ -453,15 +453,13 @@
                 }
             });
 
-            // --- Pie Chart Logic (Expenses only) ---
+            // --- Pie Chart Logic ---
             const catMap = {};
             filteredData.filter(t => t.type === 'expense').forEach(t => {
                 catMap[t.category] = (catMap[t.category] || 0) + Number(t.amount);
             });
             const pieLabels = Object.keys(catMap);
             const pieData = Object.values(catMap);
-            
-            // Generate vibrant colors
             const pieColors = ['#f43f5e', '#8b5cf6', '#3b82f6', '#10b981', '#f59e0b', '#64748b'];
 
             if(pieChart) pieChart.destroy();
@@ -489,7 +487,6 @@
         const renderApp = () => {
             const displayData = getFilteredData();
 
-            // 1. Update Totals (Based on filtered data)
             const totalIn = displayData.filter(t => t.type === 'income').reduce((s, i) => s + Number(i.amount), 0);
             const totalEx = displayData.filter(t => t.type === 'expense').reduce((s, i) => s + Number(i.amount), 0);
             const bal = totalIn - totalEx;
@@ -498,7 +495,6 @@
             document.getElementById('total-amount').textContent = formatMoney(totalEx);
             document.getElementById('total-balance').textContent = formatMoney(bal);
 
-            // 2. Update Budget (Always based on ALL current month data, regardless of filter)
             const now = new Date();
             const currentMonthExpense = transactions.filter(t => {
                 const d = new Date(t.date);
@@ -507,15 +503,12 @@
             
             updateBudgetUI(currentMonthExpense);
 
-            // Check Budget Alert
             if(monthlyBudget > 0 && currentMonthExpense > monthlyBudget && transactions.length > 0) {
-                // simple visual cue if exceeded
                 document.getElementById('total-amount').parentElement.classList.add('border-red-500', 'border-2');
             } else {
                 document.getElementById('total-amount').parentElement.classList.remove('border-red-500', 'border-2');
             }
 
-            // 3. Render List
             listContainer.querySelectorAll('.record-item').forEach(e => e.remove());
             
             if (displayData.length === 0) {
@@ -525,7 +518,6 @@
                 emptyState.style.display = 'none';
                 clearAllBtn.classList.remove('hidden');
                 
-                // Sort Newest first
                 displayData.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(item => {
                     const el = document.createElement('div');
                     el.className = 'record-item bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-3 md:p-4 rounded-xl shadow-sm flex items-center justify-between hover:shadow-md transition-shadow group';
@@ -565,7 +557,6 @@
         // Save Local
         const saveData = () => localStorage.setItem('myTransactions', JSON.stringify(transactions));
 
-        // Delete Record
         window.deleteExpense = (id) => {
             transactions = transactions.filter(i => i.id !== id);
             saveData();
@@ -573,7 +564,6 @@
             showToast('မှတ်တမ်းကို ဖျက်လိုက်ပါပြီ။', 'success');
         };
 
-        // Clear All
         clearAllBtn.addEventListener('click', () => {
             if(confirm('မှတ်တမ်းအားလုံးကို ဖျက်ပစ်ဖို့ သေချာပါသလား?')) {
                 transactions = [];
@@ -583,19 +573,22 @@
             }
         });
 
-        // 🚨 1. Add Record (POST to Google Sheet)
+        // 🚨 1. Add Record (POST to Google Sheet - Using AWAIT for Phone support)
         const saveToGoogleSheets = async (transaction) => {
             if(!SCRIPT_URL) return;
             try {
-                fetch(SCRIPT_URL, {
-                    method: 'POST', mode: 'no-cors',
+                // Awaiting the fetch prevents the mobile browser from cancelling the request early
+                await fetch(SCRIPT_URL, {
+                    method: 'POST', 
+                    mode: 'no-cors',
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     body: JSON.stringify(transaction)
                 });
-            } catch (e) { console.error(e); }
+            } catch (e) { console.error("Google Sheet Sync Error:", e); }
         };
 
-        form.addEventListener('submit', (e) => {
+        // Make the submit listener ASYNC
+        form.addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('submit-btn');
             const originalText = btn.innerHTML;
@@ -618,7 +611,9 @@
             transactions.push(newItem);
             saveData();
             renderApp();
-            saveToGoogleSheets(newItem);
+            
+            // 🚨 Wait until Data is sent to Google Sheet (Crucial for Mobile browsers)
+            await saveToGoogleSheets(newItem);
 
             document.getElementById('desc').value = '';
             document.getElementById('amount').value = '';
@@ -627,22 +622,21 @@
             btn.innerHTML = originalText; btn.disabled = false; lucide.createIcons();
             showToast('မှတ်တမ်းသစ် ထည့်သွင်းပြီးပါပြီ။');
             
-            // Check if budget exceeded after adding
             if(monthlyBudget > 0 && type === 'expense') {
                 const currentMonthEx = transactions.filter(t => t.type === 'expense' && t.date.startsWith(new Date().toISOString().slice(0,7))).reduce((s,i) => s + Number(i.amount), 0);
                 if(currentMonthEx > monthlyBudget) showToast('သတိပေးချက်: သတ်မှတ်ထားသော ဘတ်ဂျက်ထက် ကျော်လွန်နေပါပြီ!', 'warning');
             }
         });
 
-        // 🚨 2. Fetch from Google Sheets (Two-Way Sync)
+        // 🚨 2. Fetch from Google Sheets
         window.fetchFromGoogleSheets = async () => {
             if(!SCRIPT_URL) { showToast('URL မရှိပါ', 'error'); return; }
             const syncBtn = document.getElementById('sync-btn');
             syncBtn.querySelector('i').classList.add('animate-spin');
             
             try {
-                // To fetch data properly, your Google Script needs a doGet function.
-                const response = await fetch(SCRIPT_URL);
+                // Fetch with bypass cache for mobile
+                const response = await fetch(SCRIPT_URL + '?t=' + Date.now());
                 const cloudData = await response.json();
                 
                 if(cloudData && cloudData.length > 0) {
@@ -650,7 +644,6 @@
                     let addedCount = 0;
                     
                     cloudData.forEach(row => {
-                        // Ensure ID format matches and isn't duplicated
                         if(!localIds.has(String(row.id)) && row.id) {
                             transactions.push({
                                 id: String(row.id),
